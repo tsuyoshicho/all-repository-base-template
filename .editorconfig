@@ -19,8 +19,20 @@ end_of_line = lf
 [*.{txt,jax}]
 trim_trailing_whitespace = false
 
+[*.go]
+indent_style = tab
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{md,mdx,mdown,mkd,mkdn,markdown,mdwn}]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
 # File
-[Makefile]
+[{Makefile,**.mk}]
 end_of_line = lf
 indent_style = tab
 
