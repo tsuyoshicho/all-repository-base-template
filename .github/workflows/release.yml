@@ -4,12 +4,14 @@ on:
     branches:
       - master
     tags:
-      - 'v*.*.*'
-permissions:
-  contents: write
+      - "v*.*.*"
+  pull_request:
+    types:
+      - labeled
 
 jobs:
   release:
+    if: github.event.action != 'labeled'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -43,14 +45,18 @@ jobs:
 
       # Create release.
       - name: Create release
-        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1.1.4
         if: "steps.tag.outputs.value != ''"
         env:
-          # This token is provided by Actions, you do not need to create your own token
+          TAG_NAME: ${{ steps.tag.outputs.value }}
+          CURRENT: ${{ steps.bumpr.outputs.current_version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.value }}
-          release_name: Release ${{ steps.tag.outputs.value }}
-          body: ${{ steps.bumpr.outputs.message }}
-          draft: false
-          prerelease: false
+        run: |
+          gh release create "${TAG_NAME}" -t "Release ${TAG_NAME/refs\/tags\//}" --generate-notes --notes-start-tag "${CURRENT}"
+
+  release-check:
+    if: github.event.action == 'labeled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Post bumpr status comment
+        uses: haya14busa/action-bumpr@78ab5a104d20896c9c9122c64221b3aecf1a8cbb # v1.10.0
